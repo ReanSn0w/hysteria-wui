@@ -1,0 +1,9 @@
+/bin/
+/dist/
+/node_modules/
+/.env
+/runtime/
+/migration-backup-*/
+*.test
+*.out
+.DS_Store

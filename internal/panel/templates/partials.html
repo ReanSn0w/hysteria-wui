@@ -1,0 +1,38 @@
+{{define "head"}}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>{{.Title}} · Hysteria WUI</title>
+  <link rel="stylesheet" href="{{.Base}}/assets/vendor/bootstrap.min.css">
+  {{if .Editor}}<link rel="stylesheet" href="{{.Base}}/assets/vendor/codemirror.css">{{end}}
+  <link rel="stylesheet" href="{{.Base}}/assets/app.css">
+</head>
+<body>
+{{end}}
+
+{{define "nav"}}
+<nav class="navbar navbar-expand bg-dark navbar-dark">
+  <div class="container page-shell">
+    <a class="navbar-brand" href="{{.Base}}/users">Hysteria WUI</a>
+    <div class="navbar-nav flex-row gap-3 me-auto">
+      <a class="nav-link" href="{{.Base}}/users">Пользователи</a>
+      <a class="nav-link" href="{{.Base}}/sites">Сайты</a>
+      <a class="nav-link" href="{{.Base}}/config">Yaml</a>
+    </div>
+    <span class="navbar-text me-3"><span class="status-dot {{if .Running}}is-running{{end}}"></span>{{if .Running}}Hysteria работает{{else}}Hysteria остановлена{{end}}</span>
+    <form method="post" action="{{.Base}}/logout"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button class="btn btn-sm btn-outline-light">Выйти</button></form>
+  </div>
+</nav>
+{{end}}
+
+{{define "foot"}}
+<script src="{{.Base}}/assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="{{.Base}}/assets/vendor/htmx.min.js"></script>
+<script src="{{.Base}}/assets/app.js"></script>
+{{if .Editor}}<script src="{{.Base}}/assets/vendor/codemirror.js"></script><script src="{{.Base}}/assets/vendor/yaml.js"></script>{{end}}
+{{if or .Editor .Sites}}<script type="module" src="{{.Base}}/assets/config.js"></script>{{end}}
+</body></html>
+{{end}}

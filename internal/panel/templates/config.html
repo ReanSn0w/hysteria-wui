@@ -1,0 +1,12 @@
+{{define "config"}}{{template "head" .}}{{template "nav" .}}
+<main class="container page-shell py-4">
+  <h1 class="h3 mb-3">Yaml</h1>
+  {{if .Message}}<div class="alert {{if .Error}}alert-danger{{else}}alert-success{{end}}" role="alert">{{.Message}}</div>{{end}}
+  <section>
+    <p class="text-secondary">Прямое редактирование <code>hysteria.yaml</code>. Управляемые панелью поля изменять нельзя.</p>
+    <div class="alert alert-warning">Сохранение кратковременно перезапустит Hysteria и прервёт активные соединения. При ошибке будет восстановлен предыдущий YAML.</div>
+    <form method="post" action="{{.Base}}/config" id="config-form"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><textarea id="config-editor" name="config">{{.Config}}</textarea>
+      <div id="yaml-status" class="form-text mt-2" role="status">Проверка YAML…</div><button class="btn btn-primary mt-3" id="config-save">Сохранить и перезапустить</button>
+    </form>
+  </section>
+</main>{{template "foot" .}}{{end}}

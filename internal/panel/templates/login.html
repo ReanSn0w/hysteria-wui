@@ -1,0 +1,12 @@
+{{define "login"}}{{template "head" .}}
+<main class="container py-5" style="max-width: 420px">
+  <div class="card shadow-sm"><div class="card-body p-4">
+    <h1 class="h3 mb-4">Hysteria WUI</h1>
+    {{if .Error}}<div class="alert alert-danger" role="alert">Не удалось войти. Проверьте данные и повторите попытку.</div>{{end}}
+    <form method="post" action="{{.Base}}/login">
+      <div class="mb-3"><label class="form-label">Логин</label><input class="form-control" name="username" autocomplete="username" required autofocus></div>
+      <div class="mb-4"><label class="form-label">Пароль</label><input class="form-control" type="password" name="password" autocomplete="current-password" required></div>
+      <button class="btn btn-primary w-100">Войти</button>
+    </form>
+  </div></div>
+</main>{{template "foot" .}}{{end}}

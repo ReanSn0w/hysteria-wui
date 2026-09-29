@@ -1,0 +1,38 @@
+{{define "sites"}}{{template "head" .}}{{template "nav" .}}
+<main class="container page-shell py-4">
+  <h1 class="h3 mb-3">Сайты</h1>
+  {{if .Message}}<div class="alert {{if .Error}}alert-danger{{else}}alert-success{{end}}" role="alert">{{.Message}}</div>{{end}}
+  <section>
+      <p class="text-secondary mb-2">Правила применяются сверху вниз.</p>
+      <p class="small text-secondary">Домен задаётся как DNS-суффик: <code>ru</code> совпадёт со всей зоной <code>.ru</code>.</p>
+      {{if .AccessDisabled}}
+        <div class="alert alert-danger">UI для ACL недоступен: {{.AccessDisabled}}</div>
+      {{else}}
+        {{if not .SniffEnabled}}<div class="alert alert-warning">В YAML не включён <code>sniff.enable</code>. Без sniff Hysteria не всегда сможет определить домен трафика.</div>{{end}}
+        {{if .OtherACLCount}}<div class="alert alert-info">В YAML есть другие ACL-правила: {{.OtherACLCount}}. Панель их сохранит после доменных правил; изменять их нужно в YAML.</div>{{end}}
+        <form method="post" action="{{.Base}}/config/access" class="card card-body mb-4">
+          <input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="operation" value="add">
+          <div class="row g-2 align-items-end">
+            <div class="col-md"><label class="form-label" for="access-domain">Домен или суффик</label><input class="form-control" id="access-domain" name="domain" placeholder="example.ru" inputmode="url" required></div>
+            <div class="col-md-3"><label class="form-label" for="access-action">Действие</label><select class="form-select" id="access-action" name="action"><option value="allow">Разрешить</option><option value="block">Запретить</option></select></div>
+            <div class="col-md-auto"><button class="btn btn-primary w-100">Добавить</button></div>
+          </div>
+        </form>
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center"><span>ACL-правила</span><span class="small text-secondary">Перетащите за маркер или используйте стрелки</span></div>
+          <div class="list-group list-group-flush" id="access-rule-list">
+            {{range .AccessRules}}
+            <div class="list-group-item access-rule d-flex align-items-center gap-2" data-action="{{.Action}}" data-domain="{{.Domain}}">
+              <button class="btn btn-sm btn-link text-secondary access-drag-handle" type="button" aria-label="Перетащить правило" title="Перетащить">☰</button>
+              <span class="badge {{if eq .Action "allow"}}text-bg-success{{else}}text-bg-danger{{end}}">{{if eq .Action "allow"}}Разрешить{{else}}Запретить{{end}}</span>
+              <code class="access-domain flex-grow-1">{{.Domain}}</code>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Изменить порядок"><button class="btn btn-outline-secondary access-up" type="button" aria-label="Выше">↑</button><button class="btn btn-outline-secondary access-down" type="button" aria-label="Ниже">↓</button></div>
+              <form method="post" action="{{$.Base}}/config/access" data-confirm="Удалить правило {{.Domain}}?"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="operation" value="delete"><input type="hidden" name="action" value="{{.Action}}"><input type="hidden" name="domain" value="{{.Domain}}"><button class="btn btn-sm btn-outline-danger">Удалить</button></form>
+            </div>
+            {{else}}<div class="list-group-item text-secondary">Доменных ACL-правил пока нет.</div>{{end}}
+          </div>
+        </div>
+        {{if .AccessRules}}<form method="post" action="{{.Base}}/config/access" id="access-order-form"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="operation" value="reorder"><div id="access-order-fields"></div><button class="btn btn-primary" id="access-order-save" disabled>Сохранить порядок</button></form>{{end}}
+      {{end}}
+    </section>
+</main>{{template "foot" .}}{{end}}

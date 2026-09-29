@@ -1,0 +1,15 @@
+{
+  "name": "hysteria-wui-assets",
+  "private": true,
+  "scripts": {
+    "build:assets": "node scripts/build-assets.mjs"
+  },
+  "devDependencies": {
+    "bootstrap": "5.3.8",
+    "codemirror": "5.65.20",
+    "htmx.org": "2.0.8"
+  },
+  "dependencies": {
+    "js-yaml": "^5.4.2"
+  }
+}
