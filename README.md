@@ -10,8 +10,8 @@
 
    ```bash
    mkdir -p ~/hysteria-wui && cd ~/hysteria-wui
-   curl -fsSLo compose.yaml https://raw.githubusercontent.com/ReanSn0w/hysteria-wui/v1.0.0/compose.yaml
-   curl -fsSLo .env https://raw.githubusercontent.com/ReanSn0w/hysteria-wui/v1.0.0/.env.example
+   curl -fsSLo compose.yaml https://raw.githubusercontent.com/ReanSn0w/hysteria-wui/v1.0.1/compose.yaml
+   curl -fsSLo .env https://raw.githubusercontent.com/ReanSn0w/hysteria-wui/v1.0.1/.env.example
    chmod 600 .env
    ```
 

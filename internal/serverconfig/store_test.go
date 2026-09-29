@@ -130,6 +130,48 @@ func TestStoreEnsureAllowsUnrelatedFilesAndEmptyStateDirectories(t *testing.T) {
 	}
 }
 
+func TestStoreEnsureReconcilesDecoyURLFromEnvOnExistingState(t *testing.T) {
+	dir := t.TempDir()
+	managed := Managed{
+		Listen: ":8443", CertFile: "/data/cert.pem", KeyFile: "/data/key.pem",
+		DecoyURL: "https://old.example.org",
+	}
+	if err := NewStore(dir, managed).Ensure(); err != nil {
+		t.Fatalf("create old config: %v", err)
+	}
+	path := filepath.Join(dir, configFilename)
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw = append([]byte("# keep this comment\n"), raw...)
+	raw = append(raw, []byte("disableUDP: true\n")...)
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	managed.DecoyURL = "https://new.example.org"
+	store := NewStore(dir, managed)
+	if err := store.Ensure(); err != nil {
+		t.Fatalf("reconcile existing config: %v", err)
+	}
+	updated, err := store.Read()
+	if err != nil {
+		t.Fatalf("read reconciled config: %v", err)
+	}
+	text := string(updated)
+	if !strings.Contains(text, "url: https://new.example.org") || strings.Contains(text, "https://old.example.org") {
+		t.Fatalf("decoy URL was not reconciled:\n%s", updated)
+	}
+	if !strings.Contains(text, "# keep this comment") || !strings.Contains(text, "disableUDP: true") {
+		t.Fatalf("unmanaged config content was lost:\n%s", updated)
+	}
+	info, err := os.Stat(path)
+	if err != nil || info.Mode().Perm() != 0o600 {
+		t.Fatalf("reconciled config permissions: %v, %v", info, err)
+	}
+}
+
 func TestStorePreservesUnknownFieldsAndComments(t *testing.T) {
 	store := testStore(t)
 	if err := store.Ensure(); err != nil {
@@ -209,6 +251,10 @@ func TestStoreRejectsManagedChanges(t *testing.T) {
 	bad := strings.Replace(string(raw), "listen: :8443", "listen: :444", 1)
 	if err := store.Validate([]byte(bad)); err == nil {
 		t.Fatal("expected managed listen validation error")
+	}
+	bad = strings.Replace(string(raw), "https://example.org", "https://other.example.org", 1)
+	if err := store.Validate([]byte(bad)); err == nil || !strings.Contains(err.Error(), "HWUI_DECOY_URL") {
+		t.Fatalf("expected HWUI_DECOY_URL validation error, got %v", err)
 	}
 	bad = string(raw) + "acme: {}\n"
 	if err := store.Validate([]byte(bad)); err == nil {

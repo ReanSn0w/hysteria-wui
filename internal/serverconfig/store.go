@@ -73,8 +73,36 @@ func (s *Store) Ensure() error {
 		return fmt.Errorf("stat legacy config: %w", err)
 	}
 	if _, err := os.Lstat(s.path); err == nil {
-		_, err = s.readValidatedLocked()
-		return err
+		raw, err := os.ReadFile(s.path)
+		if err != nil {
+			return fmt.Errorf("read config: %w", err)
+		}
+		doc, err := s.validateManaged(raw, false)
+		if err != nil {
+			return err
+		}
+		proxy := mappingValue(mappingValue(doc.Content[0], "masquerade"), "proxy")
+		decoyURL := mappingValue(proxy, "url")
+		if decoyURL.Value == s.managed.DecoyURL {
+			return nil
+		}
+		decoyURL.Value = s.managed.DecoyURL
+		var out bytes.Buffer
+		enc := yaml.NewEncoder(&out)
+		enc.SetIndent(2)
+		if err := enc.Encode(doc); err != nil {
+			return fmt.Errorf("encode config with HWUI_DECOY_URL: %w", err)
+		}
+		if err := enc.Close(); err != nil {
+			return fmt.Errorf("close config encoder: %w", err)
+		}
+		if _, err := s.validate(out.Bytes()); err != nil {
+			return fmt.Errorf("validate config with HWUI_DECOY_URL: %w", err)
+		}
+		if err := atomicWrite(s.path, out.Bytes(), 0o600); err != nil {
+			return fmt.Errorf("update masquerade URL from HWUI_DECOY_URL: %w", err)
+		}
+		return nil
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return fmt.Errorf("stat config: %w", err)
 	}
@@ -381,6 +409,10 @@ func (s *Store) readValidatedLocked() ([]byte, error) {
 }
 
 func (s *Store) validate(raw []byte) (*yaml.Node, error) {
+	return s.validateManaged(raw, true)
+}
+
+func (s *Store) validateManaged(raw []byte, enforceDecoyURL bool) (*yaml.Node, error) {
 	if len(bytes.TrimSpace(raw)) == 0 {
 		return nil, errors.New("config is empty")
 	}
@@ -447,8 +479,12 @@ func (s *Store) validate(raw []byte) (*yaml.Node, error) {
 	if err != nil {
 		return nil, fmt.Errorf("masquerade: %w", err)
 	}
-	if err := requireScalar(proxy, "url", s.managed.DecoyURL); err != nil {
-		return nil, fmt.Errorf("masquerade.proxy: %w", err)
+	decoyURL := mappingValue(proxy, "url")
+	if decoyURL == nil || decoyURL.Kind != yaml.ScalarNode || decoyURL.Tag != "!!str" {
+		return nil, errors.New("masquerade.proxy.url must be a string")
+	}
+	if enforceDecoyURL && decoyURL.Value != s.managed.DecoyURL {
+		return nil, fmt.Errorf("masquerade.proxy.url is managed by HWUI_DECOY_URL and must equal %q", s.managed.DecoyURL)
 	}
 	rewrite := mappingValue(proxy, "rewriteHost")
 	if rewrite == nil || rewrite.Kind != yaml.ScalarNode || rewrite.Tag != "!!bool" || rewrite.Value != "true" {
