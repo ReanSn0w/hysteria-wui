@@ -14,16 +14,21 @@
 {{end}}
 
 {{define "nav"}}
-<nav class="navbar navbar-expand bg-dark navbar-dark">
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
   <div class="container page-shell">
     <a class="navbar-brand" href="{{.Base}}/users">Hysteria WUI</a>
-    <div class="navbar-nav flex-row gap-3 me-auto">
-      <a class="nav-link" href="{{.Base}}/users">Пользователи</a>
-      <a class="nav-link" href="{{.Base}}/sites">Сайты</a>
-      <a class="nav-link" href="{{.Base}}/config">Yaml</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#primary-navigation" aria-controls="primary-navigation" aria-expanded="false" aria-label="Открыть меню"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="primary-navigation">
+      <div class="navbar-nav me-auto">
+        <a class="nav-link" href="{{.Base}}/users">Пользователи</a>
+        <a class="nav-link" href="{{.Base}}/sites">Сайты</a>
+        <a class="nav-link" href="{{.Base}}/config">Yaml</a>
+      </div>
+      <div class="navbar-session d-flex align-items-center gap-3">
+        <span class="navbar-text"><span class="status-dot {{if .Running}}is-running{{end}}"></span>{{if .Running}}Hysteria работает{{else}}Hysteria остановлена{{end}}</span>
+        <form method="post" action="{{.Base}}/logout"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button class="btn btn-sm btn-outline-light">Выйти</button></form>
+      </div>
     </div>
-    <span class="navbar-text me-3"><span class="status-dot {{if .Running}}is-running{{end}}"></span>{{if .Running}}Hysteria работает{{else}}Hysteria остановлена{{end}}</span>
-    <form method="post" action="{{.Base}}/logout"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button class="btn btn-sm btn-outline-light">Выйти</button></form>
   </div>
 </nav>
 {{end}}

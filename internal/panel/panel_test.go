@@ -47,6 +47,9 @@ func TestLoginAndProtectedPage(t *testing.T) {
 	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "Hysteria работает") {
 		t.Fatalf("code=%d body=%s", w.Code, w.Body.String())
 	}
+	if !strings.Contains(w.Body.String(), `class="navbar-toggler"`) || !strings.Contains(w.Body.String(), `class="collapse navbar-collapse"`) {
+		t.Fatalf("responsive navigation is missing: %s", w.Body.String())
+	}
 }
 
 func TestUserPageAndQRRoundTrip(t *testing.T) {

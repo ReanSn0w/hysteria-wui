@@ -1,16 +1,16 @@
 {{define "users"}}{{template "head" .}}{{template "nav" .}}
 <main class="container page-shell py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Пользователи</h1><p class="text-secondary mb-0">Управление доступом к Hysteria 2.</p></div><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUser">Добавить</button></div>
+  <div class="page-heading d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4"><div><h1 class="h3 mb-1">Пользователи</h1><p class="text-secondary mb-0">Управление доступом к Hysteria 2.</p></div><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUser">Добавить</button></div>
   {{if .Message}}<div class="alert {{if .Error}}alert-danger{{else}}alert-info{{end}}" role="alert">{{.Message}}</div>{{end}}
   <div class="card overflow-hidden">
     {{if .Users}}<div class="list-group list-group-flush">{{range .Users}}
-      <div class="list-group-item d-flex align-items-center gap-3 py-3"><a class="flex-grow-1 text-decoration-none fw-medium" href="{{$.Base}}/users/{{.Path}}">{{.Name}}</a>
+      <div class="list-group-item user-list-item d-flex align-items-center gap-3 py-3"><a class="flex-grow-1 text-decoration-none fw-medium text-break" href="{{$.Base}}/users/{{.Path}}">{{.Name}}</a>
         <form method="post" action="{{$.Base}}/users/delete" onsubmit="return confirm('Удалить пользователя? Клиент потеряет доступ.')"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="name" value="{{.Name}}"><button class="btn btn-sm btn-outline-danger">Удалить</button></form>
       </div>{{end}}</div>
     {{else}}<div class="card-body text-center py-5 text-secondary">Пока нет пользователей. Создайте первого.</div>{{end}}
   </div>
 </main>
-<div class="modal fade" id="addUser" tabindex="-1" aria-labelledby="addUserTitle" aria-hidden="true"><div class="modal-dialog"><div class="modal-content">
+<div class="modal fade" id="addUser" tabindex="-1" aria-labelledby="addUserTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down"><div class="modal-content">
   <form method="post" action="{{.Base}}/users"><div class="modal-header"><h2 class="modal-title fs-5" id="addUserTitle">Новый пользователь</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button></div>
   <div class="modal-body"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><label class="form-label" for="user-name">Имя</label><input class="form-control" id="user-name" name="name" maxlength="128" autocomplete="off" required><div class="form-text">Надёжный пароль будет сгенерирован автоматически.</div></div>
   <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button class="btn btn-primary">Создать</button></div></form>
