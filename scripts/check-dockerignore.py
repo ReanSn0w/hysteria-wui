@@ -18,6 +18,7 @@ required = {
     "/*.env",
     "/*.env.*",
     "!/.env.example",
+    "/relay/.env*",
 }
 missing = required - set(patterns)
 if missing:
@@ -34,4 +35,4 @@ if patterns.index("!/.env.example") < max(
 ):
     raise SystemExit(".env.example exception must follow env exclusions")
 
-print("Docker context guard: runtime/, migration-backup-*/, env secrets excluded; .env.example retained")
+print("Docker context guard: runtime/, migration-backup-*/, env secrets excluded; root .env.example retained")

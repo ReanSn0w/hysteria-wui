@@ -36,8 +36,12 @@ jobs:
           test -z "$files" || { printf '%s\n' "$files"; exit 1; }
       - name: Verify Docker build context exclusions
         run: python3 scripts/check-dockerignore.py
+      - name: Verify relay Compose
+        run: docker compose --env-file relay/.env.example -f relay/compose.yaml config --quiet
       - run: go vet ./...
       - run: go test -race ./...
+      - name: Build relay image
+        run: docker build --platform linux/amd64 --file relay/Dockerfile --tag hysteria-relay:test .
 
   publish:
     needs: test
@@ -55,10 +59,12 @@ jobs:
           short="${GITHUB_SHA::7}"
           if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
             printf 'publish=true\n' >> "$GITHUB_OUTPUT"
-            printf 'tags<<EOF\nghcr.io/reansn0w/hysteria-wui:latest\nghcr.io/reansn0w/hysteria-wui:sha-%s\nEOF\n' "$short" >> "$GITHUB_OUTPUT"
+            printf 'main_tags<<EOF\nghcr.io/reansn0w/hysteria-wui:latest\nghcr.io/reansn0w/hysteria-wui:sha-%s\nEOF\n' "$short" >> "$GITHUB_OUTPUT"
+            printf 'relay_tags<<EOF\nghcr.io/reansn0w/hysteria-relay:latest\nghcr.io/reansn0w/hysteria-relay:sha-%s\nEOF\n' "$short" >> "$GITHUB_OUTPUT"
           elif [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             printf 'publish=true\n' >> "$GITHUB_OUTPUT"
-            printf 'tags<<EOF\nghcr.io/reansn0w/hysteria-wui:%s\nghcr.io/reansn0w/hysteria-wui:sha-%s\nEOF\n' "$GITHUB_REF_NAME" "$short" >> "$GITHUB_OUTPUT"
+            printf 'main_tags<<EOF\nghcr.io/reansn0w/hysteria-wui:%s\nghcr.io/reansn0w/hysteria-wui:sha-%s\nEOF\n' "$GITHUB_REF_NAME" "$short" >> "$GITHUB_OUTPUT"
+            printf 'relay_tags<<EOF\nghcr.io/reansn0w/hysteria-relay:%s\nghcr.io/reansn0w/hysteria-relay:sha-%s\nEOF\n' "$GITHUB_REF_NAME" "$short" >> "$GITHUB_OUTPUT"
           else
             printf 'publish=false\n' >> "$GITHUB_OUTPUT"
             echo "Tag is not an exact vX.Y.Z release tag; image publication is skipped."
@@ -77,6 +83,16 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.image.outputs.tags }}
+          tags: ${{ steps.image.outputs.main_tags }}
+          provenance: mode=max
+          sbom: true
+      - uses: docker/build-push-action@v6
+        if: steps.image.outputs.publish == 'true'
+        with:
+          context: .
+          file: relay/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.image.outputs.relay_tags }}
           provenance: mode=max
           sbom: true

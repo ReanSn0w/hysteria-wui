@@ -1,0 +1,18 @@
+services:
+  hysteria-relay:
+    image: ghcr.io/reansn0w/hysteria-relay:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      HYSTERIA_RELAY_LISTEN: ":8443"
+      HYSTERIA_RELAY_UPSTREAM: ${HYSTERIA_RELAY_UPSTREAM:?set HYSTERIA_RELAY_UPSTREAM}
+      HYSTERIA_RELAY_IDLE_TIMEOUT: ${HYSTERIA_RELAY_IDLE_TIMEOUT:-5m}
+    ports:
+      - target: 8443
+        published: "${HYSTERIA_RELAY_PORT:-443}"
+        protocol: udp

@@ -50,4 +50,6 @@ sudo docker compose logs -f hysteria-wui                 # смотреть жу
 
 Данные хранятся в `runtime/` рядом с `compose.yaml`; сохраняйте резервную копию `runtime/`, `.env` и `compose.yaml`. Для изменения переменных в `.env` выполните `sudo docker compose up -d --force-recreate`. Если у вас уже есть установка с Docker volume, не создавайте пустой `runtime/` поверх неё: сначала перенесите данные.
 
+Для отдельного промежуточного сервера есть [минимальный UDP relay](relay/README.md). Он прозрачно пересылает Hysteria 2/QUIC на основной сервер и не требует своего TLS-сертификата.
+
 Проект распространяется по [лицензии MIT](LICENSE).

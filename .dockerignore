@@ -8,4 +8,5 @@ README.md
 /*.env
 /*.env.*
 !/.env.example
+/relay/.env*
 *.log
